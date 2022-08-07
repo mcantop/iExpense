@@ -14,52 +14,12 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             List {
-                ForEach(expenses.items) { item in
-                    if item.type == "Personal" {
-                        Section {
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(item.name)
-                                        .font(.headline)
-                                    Text(item.type)
-                                }
-                                
-                                Spacer()
-                                
-                                Text(item.amount, format: .currency(code: Locale.current.currencyCode ?? "USD"))
-                                    .foregroundColor(
-                                        item.amount >= 10 ? (item.amount >= 100 ? .purple : .green) : .black
-                                    )
-                            }
-                        } header: {
-                            Text("Personal")
-                        }
-                    } else {
-                        Section {
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(item.name)
-                                        .font(.headline)
-                                    Text(item.type)
-                                }
-                                
-                                Spacer()
-                                
-                                Text(item.amount, format: .currency(code: Locale.current.currencyCode ?? "USD"))
-                                    .foregroundColor(
-                                        item.amount >= 10 ? (item.amount >= 100 ? .purple : .green) : .black
-                                    )
-                            }
-                        } header: {
-                            Text("Business")
-                        }
-                    }
-                }
-                .onDelete(perform: removeItems)
+                ExpenseSection(title: "Business", expenses: expenses.businessItems, deleteItems: removeBusinessItems)
+                ExpenseSection(title: "Personal", expenses: expenses.personalItems, deleteItems: removePersonalItems)
             }
-            .navigationTitle("iExpense \(expenses.items.count == 0 ? "" : "(\(expenses.items.count))" )")
+            .navigationTitle("iExpense")
             .toolbar {
-                ToolbarItem {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showingAddExpense = true
                     } label: {
@@ -78,8 +38,26 @@ struct ContentView: View {
         }
     }
     
-    func removeItems(at offsets: IndexSet) {
-        expenses.items.remove(atOffsets: offsets)
+    func removeItems(at offsets: IndexSet, in inputArray: [ExpenseItem]) {
+        var objectsToDelete = IndexSet()
+        
+        for offset in offsets {
+            let item = inputArray[offset]
+            
+            if let index = expenses.items.firstIndex(of: item) {
+                objectsToDelete.insert(index)
+            }
+        }
+        
+        expenses.items.remove(atOffsets: objectsToDelete)
+    }
+    
+    func removePersonalItems(at offsets: IndexSet) {
+        removeItems(at: offsets, in: expenses.personalItems)
+    }
+    
+    func removeBusinessItems(at offsets: IndexSet) {
+        removeItems(at: offsets, in: expenses.businessItems)
     }
 }
 
